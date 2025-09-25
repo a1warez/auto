@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${product.name}">Детали товара</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header>
+    <h1>АвтоМир</h1>
+    <nav>
+        <a href="/">Главная</a>
+        <span th:if="${username}"> <!-- Отображаем имя пользователя, если оно есть -->
+                Привет, <span th:text="${username}"></span>!
+            </span>
+        <a href="/cart">Корзина</a>
+        <div sec:authorize="!isAuthenticated()"> <!-- Отображаем, если пользователь не вошел -->
+            <a href="/login">Войти</a>
+            <a href="/register">Регистрация</a>
+        </div>
+        <div sec:authorize="isAuthenticated()"> <!-- Отображаем, если пользователь вошел -->
+            <a href="/my-orders">Мои заказы</a>
+            <a href="/logout">Выйти</a>
+        </div>
+    </nav>
+</header>
+
+<main>
+    <div th:if="${message}" style="color:red">
+        <p th:text="${message}"></p>
+    </div>
+    <div th:if="${product}">
+        <h2><span th:text="${product.name}"></span></h2>
+        <img th:src="${product.imageUrl}" th:alt="${product.name}" width="200">
+        <p>Цена: <span th:text="${product.price}"></span> руб.</p>
+        <p th:text="${product.description}"></p>
+        <!-- ... другие детали продукта ... -->
+    </div>
+</main>
+
+<footer>
+    <p>&copy; 2023 АвтоМир.</p>
+</footer>
+</body>
+</html>

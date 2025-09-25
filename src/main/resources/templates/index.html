@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>АвтоМир</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header>
+    <h1>АвтоМир</h1>
+    <nav>
+        <a href="/">Главная</a>
+        <a href="/cart">Корзина</a>
+        <span th:if="${username}">
+         Привет, <span th:text="${username}"></span>!
+        </span>
+        <div sec:authorize="!isAuthenticated()"> <!-- Отображаем, если пользователь не вошел -->
+            <a href="/login">Войти</a>
+            <a href="/register">Регистрация</a>
+        </div>
+        <div sec:authorize="isAuthenticated()"> <!-- Отображаем, если пользователь вошел -->
+            <a href="/my-orders">Мои заказы</a>
+            <a href="/logout">Выйти</a>
+        </div>
+    </nav>
+</header>
+
+<main>
+    <h2>Список товаров</h2>
+    <div th:if="${errorMessage}" style="color:red">
+        <p th:text="${errorMessage}"></p>
+    </div>
+    <!-- Поиск -->
+    <form th:action="@{/}" method="get">
+        <input type="text" name="search" placeholder="Поиск товаров">
+        <button type="submit">Найти</button>
+    </form>
+
+    <p th:text="${searchResult}"></p>
+
+    <div class="product-list">
+        <div th:each="product : ${products}" class="product-item">
+            <img th:src="${product.imageUrl}" alt="${product.name}" width="100">
+            <h3><span th:text="${product.name}"></span></h3>
+            <p>Цена: <span th:text="${product.price}"></span> руб.</p>
+            <a th:href="@{/products/{id}(id=${product.id})}">Подробнее</a>
+
+            <form th:action="@{/cart/add}" method="post">
+                <input type="hidden" name="productId" th:value="${product.id}">
+                <input type="number" name="quantity" value="1" min="1">
+                <button type="submit">В корзину</button>
+            </form>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <p>&copy; 2023 АвтоМир.</p>
+</footer>
+</body>
+</html>

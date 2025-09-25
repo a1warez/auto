@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>АвтоМир - Мои заказы</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header>
+    <h1>АвтоМир</h1>
+    <nav>
+        <a href="/">Главная</a> |
+        <a href="/cart">Корзина</a> |
+        <a href="/my-orders">Мои заказы</a> |
+        <div th:if="${#authorization.expression('isAuthenticated()')}">
+            <span>Привет, <span th:text="${#authentication.principal.username}"></span>!</span> |
+            <a href="/logout">Выйти</a>
+        </div>
+        <div th:unless="${#authorization.expression('isAuthenticated()')}">
+            <a href="/login">Войти</a> |
+            <a href="/register">Зарегистрироваться</a>
+        </div>
+    </nav>
+</header>
+<main>
+    <h2>Мои заказы</h2>
+    <div th:if="${orders.isEmpty()}" class="no-orders">
+        <p>У вас пока нет заказов.</p>
+        <a href="/">Начать покупки</a>
+    </div>
+    <div th:unless="${orders.isEmpty()}" class="order-list">
+        <div th:each="order : ${orders}" class="order-summary">
+            <p><strong>Заказ №:</strong> <a th:href="@{/my-orders/{orderId}(orderId=${order.id})}" th:text="${order.id}"></a></p>
+            <p><strong>Дата:</strong> <span th:text="${#dates.format(order.orderDate, 'dd.MM.yyyy HH:mm')}"></span></p>
+            <p><strong>Сумма:</strong> <span th:text="${order.totalAmount}"></span> руб.</p>
+            <p><strong>Статус:</strong> <span th:text="${order.orderStatus}"></span></p>
+        </div>
+    </div>
+</main>
+<footer>
+    <p>&copy; 2023 АвтоМир.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>АвтоМир - Редактировать товар (Админ)</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header>
+    <h1>АвтоМир - Админ</h1>
+    <nav>
+        <a href="/">Главная</a> |
+        <a href="/admin/products">Список товаров</a> |
+        <a href="/admin/orders">Заказы</a> |
+        <a href="/logout">Выйти</a>
+    </nav>
+</header>
+<main>
+    <h2>Редактировать товар</h2>
+
+    <div th:if="${message}" class="success-message" style="color: green; font-weight: bold;">
+        <p th:text="${message}"></p>
+    </div>
+    <div th:if="${errorMessage}" class="error-message" style="color: red; font-weight: bold;">
+        <p th:text="${errorMessage}"></p>
+    </div>
+
+    <form th:action="@{/admin/products/{id}/edit(id=${product.id})}" th:object="${product}" method="post">
+        <input type="hidden" th:field="*{id}"> <!-- Важно: Сохраняем ID товара -->
+
+        <div>
+            <label for="name">Название:</label>
+            <input type="text" id="name" th:field="*{name}" required>
+        </div>
+        <div>
+            <label for="description">Описание:</label>
+            <textarea id="description" th:field="*{description}"></textarea>
+        </div>
+        <div>
+            <label for="price">Цена:</label>
+            <input type="number" id="price" th:field="*{price}" step="0.01" required>
+        </div>
+        <div>
+            <label for="stockQuantity">Количество на складе:</label>
+            <input type="number" id="stockQuantity" th:field="*{stockQuantity}" required>
+        </div>
+        <div>
+            <label for="imageUrl">URL изображения:</label>
+            <input type="text" id="imageUrl" th:field="*{imageUrl}">
+        </div>
+        <div>
+            <label for="brand">Бренд:</label>
+            <input type="text" id="brand" th:field="*{brand}">
+        </div>
+        <div>
+            <label for="partNumber">Артикул:</label>
+            <input type="text" id="partNumber" th:field="*{partNumber}">
+        </div>
+
+        <button type="submit">Сохранить изменения</button>
+        <a th:href="@{/admin/products}">Отмена</a>
+    </form>
+</main>
+<footer>
+    <p>&copy; 2023 АвтоМир.</p>
+</footer>
+</body>
+</html>

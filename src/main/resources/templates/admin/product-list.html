@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>АвтоМир - Список товаров (Админ)</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header>
+    <h1>АвтоМир - Админ</h1>
+    <nav>
+        <a href="/">Главная</a> |
+        <a href="/admin/add-product">Добавить товар</a> |
+        <a href="/admin/orders">Заказы</a> |
+        <a href="/logout">Выйти</a>
+    </nav>
+</header>
+<main>
+    <h2>Список товаров</h2>
+
+    <div th:if="${message}" class="success-message" style="color: green; font-weight: bold;">
+        <p th:text="${message}"></p>
+    </div>
+    <div th:if="${errorMessage}" class="error-message" style="color: red; font-weight: bold;">
+        <p th:text="${errorMessage}"></p>
+    </div>
+
+    <div class="product-list">
+        <div th:each="product : ${products}" class="product-item">
+            <img th:src="${product.imageUrl}" alt="${product.name}" width="100">
+            <h3><span th:text="${product.name}"></span></h3>
+            <p>Цена: <span th:text="${product.price}"></span> руб.</p>
+            <a th:href="@{/admin/products/{id}/edit(id=${product.id})}">Редактировать</a>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" th:if="${totalPages > 1}">
+        <a th:href="@{/admin/products(page=${page - 1}, size=${size})}" th:if="${page > 0}">Предыдущая</a>
+        <span th:text="${page + 1}"></span>/<span th:text="${totalPages}"></span>
+        <a th:href="@{/admin/products(page=${page + 1}, size=${size})}" th:if="${page < totalPages - 1}">Следующая</a>
+    </div>
+
+</main>
+<footer>
+    <p>&copy; 2023 АвтоМир.</p>
+</footer>
+</body>
+</html>

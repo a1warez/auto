@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Вход</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header>
+    <h1>АвтоМир</h1>
+    <nav>
+        <a href="/">Главная</a> |
+        <a href="/register">Регистрация</a>
+    </nav>
+</header>
+
+<main>
+    <h2>Вход</h2>
+    <p>Войдите в свою учетную запись, чтобы продолжить.</p>
+
+    <form th:action="@{/login}" method="post">
+        <div th:if="${param.error}">
+            <p style="color: red;">Неверное имя пользователя или пароль.</p>
+        </div>
+        <div th:if="${param.logout}">
+            <p style="color: green;">Вы успешно вышли из системы.</p>
+        </div>
+
+        <div>
+            <label for="username">Имя пользователя:</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        <div>
+            <label for="password">Пароль:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+
+        <button type="submit">Войти</button>
+    </form>
+</main>
+
+<footer>
+    <p>&copy; 2023 АвтоМир.</p>
+</footer>
+</body>
+</html>

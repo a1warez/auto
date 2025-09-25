@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Ошибка</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header>
+    <h1>АвтоМир</h1>
+    <nav>
+        <a href="/">Главная</a>
+    </nav>
+</header>
+
+<main>
+    <h2>Произошла ошибка</h2>
+    <p th:text="${errorMessage}">Произошла непредвиденная ошибка.</p>
+    <p>Пожалуйста, попробуйте позже.</p>
+</main>
+
+<footer>
+    <p>&copy; 2023 АвтоМир.</p>
+</footer>
+</body>
+</html>

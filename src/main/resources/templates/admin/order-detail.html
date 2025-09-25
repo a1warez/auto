@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>АвтоМир - Детали заказа (Админ)</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header>
+    <h1>АвтоМир - Админ</h1>
+    <nav>
+        <a href="/">Главная</a> |
+        <a href="/admin/products">Список товаров</a> |
+        <a href="/admin/orders">Заказы</a> |
+        <a href="/logout">Выйти</a>
+    </nav>
+</header>
+<main>
+    <h2>Детали заказа</h2>
+
+    <div th:if="${message}" class="success-message" style="color: green; font-weight: bold;">
+        <p th:text="${message}"></p>
+    </div>
+    <div th:if="${errorMessage}" class="error-message" style="color: red; font-weight: bold;">
+        <p th:text="${errorMessage}"></p>
+    </div>
+
+    <div class="order-details">
+        <p><strong>Номер заказа:</strong> <span th:text="${order.id}"></span></p>
+        <p><strong>Дата заказа:</strong> <span th:text="${#dates.format(order.orderDate, 'dd.MM.yyyy HH:mm')}"></span></p>
+        <p><strong>Пользователь:</strong> <span th:text="${order.user.username}"></span></p>
+        <p><strong>Адрес доставки:</strong> <span th:text="${order.shippingAddress}"></span></p>
+        <p><strong>Сумма заказа:</strong> <span th:text="${order.totalAmount}"></span> руб.</p>
+
+        <h3>Товары в заказе:</h3>
+        <table border="1">
+            <thead>
+            <tr>
+                <th>Название товара</th>
+                <th>Количество</th>
+                <th>Цена за единицу</th>
+                <th>Сумма</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="item : ${order.orderItems}"> <!-- Предполагается, что у заказа есть список элементов заказа -->
+                <td th:text="${item.product.name}"></td> <!-- Предполагается, что у элемента заказа есть связь с товаром -->
+                <td th:text="${item.quantity}"></td>
+                <td th:text="${item.price}"></td>
+                <td th:text="${item.quantity * item.price}"></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <form th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post">
+            <label for="status">Статус заказа:</label>
+            <select id="status" name="status">
+                <option value="NEW" th:selected="${order.orderStatus == 'NEW'}">Новый</option>
+                <option value="PROCESSING" th:selected="${order.orderStatus == 'PROCESSING'}">В обработке</option>
+                <option value="SHIPPED" th:selected="${order.orderStatus == 'SHIPPED'}">Отправлен</option>
+                <option value="DELIVERED" th:selected="${order.orderStatus == 'DELIVERED'}">Доставлен</option>
+                <option value="CANCELLED" th:selected="${order.orderStatus == 'CANCELLED'}">Отменен</option>
+            </select>
+            <button type="submit">Изменить статус</button>
+        </form>
+    </div>
+</main>
+<footer>
+    <p>&copy; 2023 АвтоМир.</p>
+</footer>
+</body>
+</html>

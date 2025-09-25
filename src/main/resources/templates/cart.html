@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>АвтоМир - Корзина</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header>
+    <h1>АвтоМир</h1>
+    <nav>
+        <a href="/">Главная</a> |
+        <a href="/cart">Корзина (<span th:text="${cartItemCount}">0</span>)</a> |
+        <a href="/my-orders">Мои заказы</a> |
+        <div th:if="${#authorization.expression('isAuthenticated()')}">
+            <span>Привет, <span th:text="${#authentication.principal.username}"></span>!</span> |
+            <a href="/logout">Выйти</a>
+        </div>
+        <div th:unless="${#authorization.expression('isAuthenticated()')}">
+            <a href="/login">Войти</a> |
+            <a href="/register">Зарегистрироваться</a>
+        </div>
+    </nav>
+</header>
+<main>
+    <h2>Ваша корзина</h2>
+    <div th:if="${cart.cartItems.isEmpty()}" class="empty-cart">
+        <p>Ваша корзина пуста.</p>
+        <a href="/">Продолжить покупки</a>
+    </div>
+    <div th:unless="${cart.cartItems.isEmpty()}">
+        <div class="cart-items">
+            <div th:each="item : ${cart.cartItems}" class="cart-item">
+                <img th:src="${item.product.imageUrl}" alt="${item.product.name}" width="50">
+                <h4><a th:href="@{/products/{id}(id=${item.product.id})}" th:text="${item.product.name}"></a></h4>
+                <p>Цена: <span th:text="${item.product.price}"></span> руб.</p>
+                <form th:action="@{/cart/update}" method="post" style="display: inline;">
+                    <input type="hidden" name="cartItemId" th:value="${item.id}">
+                    <input type="number" name="quantity" th:value="${item.quantity}" min="1" style="width: 60px;">
+                    <button type="submit">Обновить</button>
+                </form>
+                <p>Сумма: <span th:text="${item.subtotal}"></span> руб.</p>
+                <a th:href="@{/cart/remove/{cartItemId}(cartItemId=${item.id})}" class="remove-item">Удалить</a>
+            </div>
+        </div>
+        <div class="cart-summary">
+            <h3>Итого: <span th:text="${cart.total}"></span> руб.</h3>
+            <a href="/checkout">Оформить заказ</a>
+            <a href="/cart/clear" class="clear-cart">Очистить корзину</a>
+        </div>
+    </div>
+</main>
+<footer>
+    <p>&copy; 2023 АвтоМир.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Регистрация</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header>
+    <h1>АвтоМир</h1>
+    <nav>
+        <a href="/">Главная</a> |
+        <a href="/login">Войти</a>
+    </nav>
+</header>
+
+<main>
+    <h2>Регистрация</h2>
+    <p>Зарегистрируйтесь, чтобы получить доступ ко всем функциям!</p>
+
+    <form th:action="@{/register}" th:object="${user}" method="post">
+        <div>
+            <label for="username">Имя пользователя:</label>
+            <input type="text" id="username" th:field="*{username}" required>
+        </div>
+        <div>
+            <label for="password">Пароль:</label>
+            <input type="password" id="password" th:field="*{password}" required>
+        </div>
+
+        <button type="submit">Зарегистрироваться</button>
+    </form>
+</main>
+
+<footer>
+    <p>&copy; 2023 АвтоМир.</p>
+</footer>
+</body>
+</html>
