@@ -30,6 +30,17 @@
 </header>
 <main>
     <h2>Список товаров</h2>
+    <!-- Добавляем ссылки для сортировки -->
+
+    <div class="sort-links">
+        <span>Сортировать по:</span>
+        <a th:href="@{${nameSortUrl}}"
+           th:classappend="${sortField == 'name' ? 'active' : ''}">Названию</a>
+        <a th:href="@{${priceSortUrl}}"
+           th:classappend="${sortField == 'price' ? 'active' : ''}">Цене</a>
+        <!-- Можно добавить другие ссылки для сортировки -->
+    </div>
+
     <div class="product-list">
         <div th:each="product : ${products}" class="product-item">
             <!-- Добавили отображение изображения -->

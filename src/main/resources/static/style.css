@@ -256,3 +256,22 @@ h1 { text-align: center; margin-bottom: 20px; }
         font-size: 0.9em;
     }
 }
+
+.sort-links a {
+    display: inline-block; /* Или block */
+    padding: 5px 10px;
+    margin-right: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    text-decoration: none;
+    color: #333;
+}
+
+.sort-links a:hover {
+    background-color: #f0f0f0;
+}
+
+.sort-links {
+    margin-bottom: 10px;
+    text-align: center; /* Выровняйте по центру, если хотите */
+}

@@ -22,28 +22,29 @@ public class ProductService {
         this.productRepository = productRepository;
     }
 
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    public Page<Product> getAllProducts(Pageable pageable) {
+        System.out.println("Sorting by: " + pageable.getSort()); // Добавьте этот лог
+        return productRepository.findAll(pageable);
     }
 
     public Optional<Product> getProductById(Long id) {
         return productRepository.findById(id);
     }
-    public List<Product> searchProducts(String searchTerm) {
-        if (searchTerm == null || searchTerm.trim().isEmpty()) {
-            return getAllProducts(); // Возвращаем все продукты, если поисковый запрос пустой
-        }
-
-        String searchTermLower = searchTerm.trim().toLowerCase(); // Убираем пробелы и приводим к нижнему регистру
-
-        List<Product> products = productRepository.findByNameContainingIgnoreCase(searchTermLower);
-        products.addAll(productRepository.findByPartNumberContainingIgnoreCase(searchTermLower));
-        products.addAll(productRepository.findByBrandContainingIgnoreCase(searchTermLower));
-
-        return products.stream()
-                .distinct() // Убираем дубликаты
-                .collect(Collectors.toList());
-    }
+//    public List<Product> searchProducts(String searchTerm) {
+//        if (searchTerm == null || searchTerm.trim().isEmpty()) {
+//            return getAllProducts(); // Возвращаем все продукты, если поисковый запрос пустой
+//        }
+//
+//        String searchTermLower = searchTerm.trim().toLowerCase(); // Убираем пробелы и приводим к нижнему регистру
+//
+//        List<Product> products = productRepository.findByNameContainingIgnoreCase(searchTermLower);
+//        products.addAll(productRepository.findByPartNumberContainingIgnoreCase(searchTermLower));
+//        products.addAll(productRepository.findByBrandContainingIgnoreCase(searchTermLower));
+//
+//        return products.stream()
+//                .distinct() // Убираем дубликаты
+//                .collect(Collectors.toList());
+//    }
     public Product addProduct(Product product) {
         productRepository.save(product);
         return product;
