@@ -94,24 +94,24 @@ public class HomeController {
         model.addAttribute("errorMessage", ex.getReason());
         return "error"; // Или другая страница для отображения ошибки
     }
-}
 
     // Детальная страница товара
-//    @GetMapping("/products/{id}")
-//    public String productDetail(@PathVariable Long id, Model model) {
-//        // Получаем объект Authentication из SecurityContextHolder
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal())) {
-//            // Получаем имя пользователя
-//            String username = authentication.getName();
-//            model.addAttribute("username", username); // Добавляем имя пользователя в модель
-//        }
-//        Optional<Product> product = productService.getProductById(id);
-//        if (product.isPresent()) {
-//            model.addAttribute("product", product.get());
-//            return "product-detail"; // Thymeleaf шаблон для деталей товара
-//        } else {
-//            model.addAttribute("message", "Товар не найден!");
-//            return "error"; // Thymeleaf шаблон для страницы ошибки
-//        }
-//    }
+    @GetMapping("/products/{id}")
+    public String productDetail(@PathVariable Long id, Model model) {
+        // Получаем объект Authentication из SecurityContextHolder
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal())) {
+            // Получаем имя пользователя
+            String username = authentication.getName();
+            model.addAttribute("username", username); // Добавляем имя пользователя в модель
+        }
+        Optional<Product> product = productService.getProductById(id);
+        if (product.isPresent()) {
+            model.addAttribute("product", product.get());
+            return "product-detail"; // Thymeleaf шаблон для деталей товара
+        } else {
+            model.addAttribute("message", "Товар не найден!");
+            return "error"; // Thymeleaf шаблон для страницы ошибки
+        }
+    }
+}
