@@ -11,87 +11,68 @@ import ru.test.auto.repository.CartRepository;
 import ru.test.auto.repository.ProductRepository;
 import ru.test.auto.repository.UserRepository;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import javax.transaction.Transactional;
+import java.util.*;
 
 @Service
 public class CartService {
 
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
-    private final ProductRepository productRepository;
-    private final UserRepository userRepository; // Нужен для получения пользователя
 
     @Autowired
-    public CartService(CartRepository cartRepository, CartItemRepository cartItemRepository, ProductRepository productRepository, UserRepository userRepository) {
+    public CartService(CartRepository cartRepository, CartItemRepository cartItemRepository) {
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
-        this.productRepository = productRepository;
-        this.userRepository = userRepository;
     }
 
-    public Cart getCartByUser(Long userId) {
-        Optional<Cart> cartOptional = cartRepository.findByUserId(userId);
-        if (cartOptional.isPresent()) {
-            return cartOptional.get();
-        } else {
-            // Создаем новую корзину, если она еще не существует
-            User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-            Cart newCart = new Cart();
-            newCart.setUser(user);
-            return cartRepository.save(newCart);
+    @Transactional // Важно!
+    public void addItemToCart(User user, Product product, int quantity) {
+        System.out.println("addItemToCart called for user: " + user.getUsername() + ", product: " + product.getName() + ", quantity: " + quantity); // Лог
+
+        Cart cart = cartRepository.findByUser(user);
+        if (cart == null) {
+            cart = new Cart();
+            cart.setUser(user);
+            cartRepository.save(cart);
         }
-    }
 
-    public void addProductToCart(Long userId, Long productId, int quantity) {
-        Cart cart = getCartByUser(userId);
-        Product product = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("Product not found"));
-
-        Optional<CartItem> existingItemOptional = cartItemRepository.findByCartIdAndProductId(cart.getId(), productId);
-
-        if (existingItemOptional.isPresent()) {
-            CartItem existingItem = existingItemOptional.get();
-            existingItem.setQuantity(existingItem.getQuantity() + quantity);
-            cartItemRepository.save(existingItem);
+        CartItem cartItem = cartItemRepository.findByCartAndProduct(cart, product);
+        if (cartItem == null) {
+            cartItem = new CartItem();
+            cartItem.setCart(cart);
+            cartItem.setProduct(product);
+            cartItem.setQuantity(quantity);
         } else {
-            CartItem newItem = new CartItem();
-            newItem.setCart(cart);
-            newItem.setProduct(product);
-            newItem.setQuantity(quantity);
-            cartItemRepository.save(newItem);
-            // Обновляем связь в корзине (важно для правильного управления коллекциями)
-            cart.getCartItems().add(newItem);
-            cartRepository.save(cart); // Сохраняем корзину с добавленным элементом
+            cartItem.setQuantity(cartItem.getQuantity() + quantity);
         }
+
+        System.out.println("Saving cartItem: " + cartItem.getProduct().getName() + ", quantity: " + cartItem.getQuantity()); // Лог перед сохранением
+        cartItemRepository.save(cartItem); // Сохраняем cartItem
+        System.out.println("CartItem saved successfully."); // Лог после сохранения
     }
 
-    public void updateCartItemQuantity(Long cartItemId, int quantity) {
-        CartItem item = cartItemRepository.findById(cartItemId).orElseThrow(() -> new RuntimeException("Cart item not found"));
-        if (quantity > 0) {
-            item.setQuantity(quantity);
-            cartItemRepository.save(item);
-        } else {
-            // Удаляем товар из корзины, если количество <= 0
-            cartItemRepository.deleteById(cartItemId);
+    public List<CartItem> getCartItemsForUser(User user) {
+        System.out.println("Fetching cart items for user: " + user.getUsername()); // Лог
+
+        Cart cart = cartRepository.findByUser(user);
+        if (cart == null) {
+            System.out.println("Cart not found for user: " + user.getUsername()); // Лог
+            return new ArrayList<>();
         }
+        System.out.println("Cart found for user: " + user.getUsername() + ", Cart ID: " + cart.getId()); // Лог
+
+        List<CartItem> items = cartItemRepository.findByCart(cart);
+        System.out.println("Found " + items.size() + " items in cart."); // Лог
+        return items;
     }
 
-    public void removeCartItem(Long cartItemId) {
-        cartItemRepository.deleteById(cartItemId);
-    }
-
-    public void clearCart(Long userId) {
-        Cart cart = getCartByUser(userId);
-        cartItemRepository.deleteAll(cart.getCartItems());
-        cart.getCartItems().clear();
-        cartRepository.save(cart);
-    }
-
-    public int getCartItemCount(Long userId) {
-        Cart cart = getCartByUser(userId);
-        return cart.getCartItems().size();
+    @Transactional
+    public void clearCart(User user) {
+        Cart cart = cartRepository.findByUser(user); // Находим корзину пользователя
+        if (cart != null) { // Убеждаемся, что корзина существует
+            List<CartItem> cartItems = cartItemRepository.findByCart(cart); // Получаем все товары в корзине
+            cartItemRepository.deleteAll(cartItems); // Удаляем все товары из корзины
+        }
     }
 }

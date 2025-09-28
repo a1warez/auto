@@ -1,6 +1,7 @@
 package ru.test.auto.model;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "order_items")
@@ -19,7 +20,7 @@ public class OrderItem {
     private Product product;
 
     private int quantity;
-    private double price; // Цена товара на момент заказа
+    private BigDecimal price; // Цена товара на момент заказа
 
     // Геттеры и сеттеры
     public Long getId() {
@@ -54,15 +55,15 @@ public class OrderItem {
         this.quantity = quantity;
     }
 
-    public double getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 
-    public double getSubtotal() {
-        return price * quantity;
-    }
+//    public BigDecimal getSubtotal() {
+//        return price * quantity;
+//    }
 }

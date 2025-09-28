@@ -1,7 +1,6 @@
 package ru.test.auto.model;
 
 import javax.persistence.*;
-
 @Entity
 @Table(name = "cart_items")
 public class CartItem {

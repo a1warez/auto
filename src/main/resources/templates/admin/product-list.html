@@ -1,45 +1,45 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>АвтоМир - Список товаров (Админ)</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>АвтоМир - Список продуктов</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
 </head>
 <body>
 <header>
-    <h1>АвтоМир - Админ</h1>
+    <h1>АвтоМир - Админ панель</h1>
     <nav>
-        <a href="/">Главная</a> |
-        <a href="/admin/add-product">Добавить товар</a> |
-        <a href="/admin/orders">Заказы</a> |
-        <a href="/logout">Выйти</a>
+        <a th:href="@{/admin/add-product}">Добавить продукт</a>
+        <a th:href="@{/logout}">Выйти</a>
     </nav>
 </header>
 <main>
-    <h2>Список товаров</h2>
-
-    <div th:if="${message}" class="success-message" style="color: green; font-weight: bold;">
-        <p th:text="${message}"></p>
+    <h2>Список продуктов</h2>
+    <div th:if="${products.isEmpty()}">
+        <p>Нет ни одного продукта.</p>
     </div>
-    <div th:if="${errorMessage}" class="error-message" style="color: red; font-weight: bold;">
-        <p th:text="${errorMessage}"></p>
-    </div>
-
-    <div class="product-list">
-        <div th:each="product : ${products}" class="product-item">
-            <img th:src="${product.imageUrl}" alt="${product.name}" width="100">
-            <h3><span th:text="${product.name}"></span></h3>
-            <p>Цена: <span th:text="${product.price}"></span> руб.</p>
-            <a th:href="@{/admin/products/{id}/edit(id=${product.id})}">Редактировать</a>
-        </div>
-    </div>
-
-    <!-- Pagination -->
-    <div class="pagination" th:if="${totalPages > 1}">
-        <a th:href="@{/admin/products(page=${page - 1}, size=${size})}" th:if="${page > 0}">Предыдущая</a>
-        <span th:text="${page + 1}"></span>/<span th:text="${totalPages}"></span>
-        <a th:href="@{/admin/products(page=${page + 1}, size=${size})}" th:if="${page < totalPages - 1}">Следующая</a>
-    </div>
-
+    <table th:unless="${products.isEmpty()}">
+        <thead>
+        <tr>
+            <th>Название</th>
+            <th>Описание</th>
+            <th>Цена</th>
+            <th>Действия</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="product : ${products}">
+            <td th:text="${product.name}"></td>
+            <td th:text="${product.description}"></td>
+            <td th:text="${product.price}"></td>
+            <td>
+                <a th:href="@{/admin/edit-product/{id}(id=${product.id})}">Редактировать</a>
+                <a th:href="@{/admin/delete-product/{id}(id=${product.id})}">Удалить</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
 </main>
 <footer>
     <p>&copy; 2023 АвтоМир.</p>

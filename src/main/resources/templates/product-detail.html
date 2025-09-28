@@ -1,43 +1,31 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title th:text="${product.name}">Детали товара</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${product.name}">АвтоМир - Детали товара</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <!-- Optional: Add Bootstrap CSS for a more modern look -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
 <header>
     <h1>АвтоМир</h1>
     <nav>
-        <a href="/">Главная</a>
-        <span th:if="${username}"> <!-- Отображаем имя пользователя, если оно есть -->
-                Привет, <span th:text="${username}"></span>!
-            </span>
-        <a href="/cart">Корзина</a>
-        <div sec:authorize="!isAuthenticated()"> <!-- Отображаем, если пользователь не вошел -->
-            <a href="/login">Войти</a>
-            <a href="/register">Регистрация</a>
-        </div>
-        <div sec:authorize="isAuthenticated()"> <!-- Отображаем, если пользователь вошел -->
-            <a href="/my-orders">Мои заказы</a>
-            <a href="/logout">Выйти</a>
-        </div>
+        <a th:href="@{/}">Главная</a>
+        <a th:href="@{/cart}">Корзина</a>
     </nav>
 </header>
-
 <main>
-    <div th:if="${message}" style="color:red">
-        <p th:text="${message}"></p>
-    </div>
-    <div th:if="${product}">
-        <h2><span th:text="${product.name}"></span></h2>
-        <img th:src="${product.imageUrl}" th:alt="${product.name}" width="200">
+    <div class="product-detail">
+        <h2 th:text="${product.name}">Название товара</h2>
+        <!-- Добавили отображение изображения -->
+        <img th:src="${product.imageUrl}" alt="Product Image" width="300">
+        <p th:text="${product.description}">Описание товара</p>
         <p>Цена: <span th:text="${product.price}"></span> руб.</p>
-        <p th:text="${product.description}"></p>
-        <!-- ... другие детали продукта ... -->
+        <button>В корзину</button>
     </div>
 </main>
-
 <footer>
     <p>&copy; 2023 АвтоМир.</p>
 </footer>

@@ -38,30 +38,35 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.authenticationProvider(authenticationProvider());
     }
-
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
-                .antMatchers("/login", "/register", "/products/**", "/cart/**", "/checkout").permitAll() // Разрешаем доступ к страницам логина, регистрации, продуктам, корзине и оформлению заказа
-                .antMatchers("/my-orders/**").authenticated() // Только аутентифицированные пользователи могут просматривать свои заказы
-                .antMatchers("/admin/**").hasRole("ADMIN") // Административные страницы доступны только ADMIN
-                .anyRequest().permitAll() // Разрешаем доступ ко всем остальным запросам (ОЧЕНЬ ВАЖНО: это должно быть в конце)
+                .antMatchers("/", "/login", "/register", "/products/**").permitAll() // Разрешаем всем
+                .antMatchers("/cart/add/**").authenticated() // Добавление в корзину - только аутентифицированные
+                .antMatchers("/cart/**").authenticated() // Просмотр и управление корзиной - только аутентифицированные
+                .antMatchers("/checkout").authenticated() // Оформление заказа - только аутентифицированные
+                .antMatchers("/my-orders/**").authenticated() // История заказов - только аутентифицированные
+                .antMatchers("/admin/**").hasRole("ADMIN") // Админка - только ADMIN
+                .anyRequest().permitAll() // Все остальные запросы - разрешены
+
                 .and()
                 .formLogin()
                 .loginPage("/login")
-                .defaultSuccessUrl("/") // Перенаправлять на главную страницу после успешного входа
-                .failureUrl("/login?error=true") // Добавлено для отображения ошибки при некорректном вводе
+                .defaultSuccessUrl("/")
+                .failureUrl("/login?error=true")
                 .permitAll()
                 .and()
                 .logout()
                 .invalidateHttpSession(true)
                 .clearAuthentication(true)
-                .logoutRequestMatcher(new AntPathRequestMatcher("/logout")) // Для поддержки POST запроса на выход
+                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
                 .logoutSuccessUrl("/login?logout")
                 .permitAll()
                 .and()
                 .exceptionHandling()
-                .accessDeniedPage("/access-denied"); // Страница для запрещенного доступа
+                .accessDeniedPage("/access-denied")
+                .and()
+                .csrf().disable(); // **Включаем CSRF защиту!**
     }
 }

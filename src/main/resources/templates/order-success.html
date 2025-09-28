@@ -1,47 +1,22 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>АвтоМир - Заказ оформлен</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>АвтоМир - Заказ успешно оформлен</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
 </head>
 <body>
 <header>
     <h1>АвтоМир</h1>
     <nav>
-        <a href="/">Главная</a> |
-        <a href="/cart">Корзина</a> |
-        <a href="/my-orders">Мои заказы</a> |
-        <div th:if="${#authorization.expression('isAuthenticated()')}">
-            <span>Привет, <span th:text="${#authentication.principal.username}"></span>!</span> |
-            <a href="/logout">Выйти</a>
-        </div>
-        <div th:unless="${#authorization.expression('isAuthenticated()')}">
-            <a href="/login">Войти</a> |
-            <a href="/register">Зарегистрироваться</a>
-        </div>
+        <a th:href="@{/}">Главная</a>
     </nav>
 </header>
 <main>
     <h2>Заказ успешно оформлен!</h2>
-    <p>Ваш заказ № <span th:text="${order.id}"></span> был успешно размещен.</p>
-    <p>Дата заказа: <span th:text="${#dates.format(order.orderDate, 'dd.MM.yyyy HH:mm')}"></span></p>
-    <p>Общая сумма: <span th:text="${order.totalAmount}"></span> руб.</p>
-    <p>Статус заказа: <span th:text="${order.orderStatus}"></span></p>
-    <p>Адрес доставки: <span th:text="${order.shippingAddress}"></span></p>
-
-    <h3>Состав заказа:</h3>
-    <div class="order-items">
-        <div th:each="item : ${order.orderItems}" class="order-item">
-            <img th:src="${item.product.imageUrl}" alt="${item.product.name}" width="50">
-            <h4><span th:text="${item.product.name}"></span></h4>
-            <p>Цена за ед.: <span th:text="${item.price}"></span> руб.</p>
-            <p>Количество: <span th:text="${item.quantity}"></span></p>
-            <p>Сумма: <span th:text="${item.subtotal}"></span> руб.</p>
-        </div>
-    </div>
-    <br>
-    <a href="/">Продолжить покупки</a> |
-    <a href="/my-orders">Перейти к моим заказам</a>
+    <p>Спасибо за ваш заказ!</p>
+    <a th:href="@{/}">Вернуться на главную страницу</a>
 </main>
 <footer>
     <p>&copy; 2023 АвтоМир.</p>

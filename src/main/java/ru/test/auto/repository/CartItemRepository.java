@@ -2,10 +2,7 @@ package ru.test.auto.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import ru.test.auto.model.Cart;
-import ru.test.auto.model.CartItem;
-import ru.test.auto.model.Order;
-import ru.test.auto.model.OrderItem;
+import ru.test.auto.model.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,4 +11,8 @@ import java.util.Optional;
 public interface CartItemRepository extends JpaRepository<CartItem, Long> {
     List<CartItem> findByCartId(Long cartId);
     Optional<CartItem> findByCartIdAndProductId(Long cartId, Long productId);
+
+    CartItem findByCartAndProduct(Cart cart, Product product);
+
+    List<CartItem> findByCart(Cart cart);
 }

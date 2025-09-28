@@ -1,6 +1,7 @@
 package ru.test.auto.service;
 
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.test.auto.model.Cart;
@@ -26,10 +27,10 @@ import java.util.stream.Collectors;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final CartRepository cartRepository;
-    private final CartItemRepository cartItemRepository;
-    private final ProductRepository productRepository;
-    private final UserRepository userRepository;
+    private  CartRepository cartRepository;
+    private  CartItemRepository cartItemRepository;
+    private  ProductRepository productRepository;
+    private  UserRepository userRepository;
 
     public OrderService(OrderRepository orderRepository, CartRepository cartRepository, CartItemRepository cartItemRepository, ProductRepository productRepository, UserRepository userRepository) {
         this.orderRepository = orderRepository;
@@ -86,7 +87,7 @@ public class OrderService {
             orderItem.setOrder(order);
             orderItem.setProduct(product);
             orderItem.setQuantity(cartItem.getQuantity());
-            orderItem.setPrice(product.getPrice());
+            orderItem.setPrice(BigDecimal.valueOf(product.getPrice()));
 
             orderItems.add(orderItem);
 
@@ -118,73 +119,27 @@ public class OrderService {
         order.setOrderStatus(status);
         orderRepository.save(order);
     }
-
-    // Метод для очистки корзины (если он еще не был реализован)
-    @Transactional
-    public void clearCart(Long userId) {
-        cartRepository.findByUserId(userId).ifPresent(cart -> {
-            cartItemRepository.deleteAll(cart.getCartItems());
-            cart.getCartItems().clear();
-            cartRepository.save(cart);
-        });
+    @Autowired
+    public OrderService(OrderRepository orderRepository) {
+        this.orderRepository = orderRepository;
     }
 
-    // Метод для удаления элемента из корзины
-    @Transactional
-    public void removeCartItem(Long cartItemId) {
-        cartItemRepository.deleteById(cartItemId);
-    }
-
-    // Метод для обновления количества товара в корзине
-    @Transactional
-    public void updateCartItemQuantity(Long cartItemId, int quantity) {
-        CartItem item = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new RuntimeException("Элемент корзины не найден"));
-        if (quantity > 0) {
-            item.setQuantity(quantity);
-            cartItemRepository.save(item);
-        } else {
-            // Если количество 0 или меньше, удаляем элемент
-            cartItemRepository.deleteById(cartItemId);
+    /**
+     * Получает список всех заказов для конкретного пользователя.
+     * @param user Пользователь, для которого нужно получить заказы.
+     * @return Список объектов Order.
+     */
+    @Transactional(readOnly = true) // Чтение данных, нет необходимости в блокировке
+    public List<Order> getOrdersForUser(User user) {
+        if (user == null) {
+            return java.util.Collections.emptyList(); // Возвращаем пустой список, если пользователь null
         }
+        return orderRepository.findByUser(user);
     }
 
-    // Метод для добавления товара в корзину
+    // Метод для сохранения заказа (может понадобиться при оформлении заказа)
     @Transactional
-    public void addProductToCart(Long userId, Long productId, int quantity) {
-        Cart cart = cartRepository.findByUserId(userId)
-                .orElseGet(() -> {
-                    // Если корзины нет, создаем новую
-                    ru.test.auto.model.User user = userRepository.findById(userId)
-                            .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
-                    Cart newCart = new Cart();
-                    newCart.setUser(user);
-                    return cartRepository.save(newCart);
-                });
-
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Товар не найден"));
-
-        // Проверяем, есть ли такой товар уже в корзине
-        Optional<CartItem> existingItem = cart.getCartItems().stream()
-                .filter(item -> item.getProduct().getId().equals(productId))
-                .findFirst();
-
-        if (existingItem.isPresent()) {
-            // Если есть, увеличиваем количество
-            CartItem item = existingItem.get();
-            item.setQuantity(item.getQuantity() + quantity);
-            cartItemRepository.save(item);
-        } else {
-            // Если нет, добавляем новый элемент
-            CartItem newItem = new CartItem();
-            newItem.setCart(cart);
-            newItem.setProduct(product);
-            newItem.setQuantity(quantity);
-            cart.getCartItems().add(newItem); // Добавляем в коллекцию корзины
-            cartItemRepository.save(newItem); // Сохраняем новый элемент
-        }
-        // Корзина будет сохранена автоматически через связь many-to-one с CartItem,
-        // или вы можете явно вызвать cartRepository.save(cart); если нужно
+    public Order saveOrder(Order order) {
+        return orderRepository.save(order);
     }
 }

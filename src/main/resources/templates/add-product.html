@@ -1,59 +1,43 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>АвтоМир - Добавить товар</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>АвтоМир - Добавить продукт</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
 </head>
 <body>
 <header>
-    <h1>АвтоМир - Добавить новый товар</h1>
+    <h1>АвтоМир - Админ панель</h1>
     <nav>
-        <a href="/">Главная</a>
+        <a th:href="@{/admin/product-list}">Список продуктов</a>
+        <a th:href="@{/logout}">Выйти</a>
     </nav>
 </header>
-
 <main>
-    <form th:action="@{/admin/add-product}" th:object="${product}" method="post">
+    <h2>Добавить продукт</h2>
+    <form th:action="@{/admin/add-product}" method="post">
         <div>
             <label for="name">Название:</label>
-            <input type="text" id="name" th:field="*{name}" required>
-        </div>
-        <div>
-            <label for="brand">Бренд:</label>
-            <input type="text" id="brand" th:field="*{brand}" required>
-        </div>
-        <div>
-            <label for="partNumber">Артикул:</label>
-            <input type="text" id="partNumber" th:field="*{partNumber}" required>
-        </div>
-        <div>
-            <label for="price">Цена:</label>
-            <input type="number" id="price" th:field="*{price}" step="0.01" required>
-        </div>
-        <div>
-            <label for="stockQuantity">Количество:</label>
-            <input type="number" id="stockQuantity" th:field="*{stockQuantity}" required>
-        </div>
-        <div>
-            <label for="imageUrl">URL картинки:</label>
-            <input type="text" id="imageUrl" th:field="*{imageUrl}">
+            <input type="text" id="name" name="name" required/>
         </div>
         <div>
             <label for="description">Описание:</label>
-            <textarea id="description" th:field="*{description}"></textarea>
+            <textarea id="description" name="description" required></textarea>
         </div>
         <div>
-            <label for="compatibleCars">Совместимость (текст):</label>
-            <textarea id="compatibleCars" th:field="*{compatibleCars}"></textarea>
+            <label for="price">Цена:</label>
+            <input type="number" id="price" name="price" step="0.01" required/>
         </div>
-        <button type="submit">Добавить товар</button>
+        <div>
+            <label for="imageUrl">URL изображения:</label>
+            <input type="text" id="imageUrl" name="imageUrl" required/>
+        </div>
+        <button type="submit">Сохранить</button>
     </form>
-    <div th:if="${message}" class="message" th:text="${message}"></div>
 </main>
-
 <footer>
-    <p>&copy; 2023 АвтоМир. Все права защищены.</p>
+    <p>&copy; 2023 АвтоМир.</p>
 </footer>
 </body>
 </html>

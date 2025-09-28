@@ -3,7 +3,9 @@ package ru.test.auto.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import ru.test.auto.model.Cart;
+import ru.test.auto.model.User;
 
+import javax.transaction.Transactional;
 import java.util.Optional;
 
 @Repository
@@ -16,4 +18,7 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
      * @return Optional, содержащий Cart, если найден, иначе пустой Optional.
      */
     Optional<Cart> findByUserId(Long userId);
+
+    @Transactional
+    Cart findByUser(User user);
 }

@@ -1,109 +1,100 @@
 package ru.test.auto.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.test.auto.model.Cart;
+import ru.test.auto.model.CartItem;
+import ru.test.auto.model.Product;
+import ru.test.auto.model.User;
 import ru.test.auto.service.CartService;
+import ru.test.auto.service.ProductService;
 import ru.test.auto.service.UserService;
 
 
+import java.util.List;
 import java.util.Optional;
 
 @Controller
+@RequestMapping("/cart")
 public class CartController {
 
     private final CartService cartService;
+    private final UserService userService;
+    private final ProductService productService;
 
-    public CartController(CartService cartService) {
+    @Autowired
+    public CartController(CartService cartService, UserService userService, ProductService productService) {
         this.cartService = cartService;
+        this.userService = userService;
+        this.productService = productService;
     }
 
-    // Отображение корзины
-    @GetMapping("/cart")
-    public String viewCart(Authentication authentication, Model model) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            // Если пользователь не аутентифицирован, перенаправляем на логин
-            return "redirect:/login";
+    @PostMapping("/add/{productId}")
+    public ResponseEntity<?> addToCart(@PathVariable Long productId, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Необходимо войти в систему.");
         }
-        // Получаем ID текущего пользователя
-        Long userId = ((ru.test.auto.model.User) authentication.getPrincipal()).getId();
-        Cart cart = cartService.getCartByUser(userId);
-        model.addAttribute("cart", cart);
-        // Добавляем количество товаров в корзине для отображения в шапке (если нужно)
-        // model.addAttribute("cartItemCount", cartService.getCartItemCount(userId));
-        return "cart"; // Thymeleaf шаблон для отображения корзины
+
+        String username = authentication.getName();
+        User user = userService.findByUsername(username);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Пользователь не найден.");
+        }
+
+        Optional<Product> productOptional = productService.getProductById(productId); // Получаем Optional<Product>
+
+        if (!productOptional.isPresent()) { // Проверяем, что продукт найден
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Товар не найден.");
+        }
+
+        Product product = productOptional.get(); // Извлекаем Product из Optional<Product>
+
+        cartService.addItemToCart(user, product, 1); // Добавляем товар в корзину
+        return ResponseEntity.ok("Товар добавлен в корзину.");
     }
 
-    // Добавление товара в корзину ( POST запрос с формы)
-    @PostMapping("/cart/add")
-    public String addProductToCart(@RequestParam Long productId, @RequestParam int quantity, Authentication authentication, RedirectAttributes redirectAttributes) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return "redirect:/login";
-        }
-        Long userId = ((ru.test.auto.model.User) authentication.getPrincipal()).getId();
 
-        if (quantity <= 0) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Количество товара должно быть больше нуля.");
-            return "redirect:/cart";
-        }
+    @GetMapping
+    public String viewCart(Model model, Authentication authentication) {
+        System.out.println("VIEW CART CALLED"); // Добавьте этот лог
 
-        try {
-            cartService.addProductToCart(userId, productId, quantity);
-            redirectAttributes.addFlashAttribute("message", "Товар добавлен в корзину!");
-        } catch (RuntimeException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        }
-        return "redirect:/cart"; // Перенаправляем обратно в корзину
-    }
-
-    // Обновление количества товара в корзине
-    @PostMapping("/cart/update")
-    public String updateCartItem(@RequestParam Long cartItemId, @RequestParam int quantity, Authentication authentication, RedirectAttributes redirectAttributes) {
-        if (authentication == null || !authentication.isAuthenticated()) {
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            System.out.println("User not authenticated, redirecting to login.");
             return "redirect:/login";
         }
 
-        try {
-            cartService.updateCartItemQuantity(cartItemId, quantity);
-            redirectAttributes.addFlashAttribute("message", "Количество обновлено.");
-        } catch (RuntimeException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        }
-        return "redirect:/cart";
-    }
+        String username = authentication.getName();
+        System.out.println("Authenticated user: " + username); // Лог
 
-    // Удаление товара из корзины (GET запрос по ссылке)
-    @GetMapping("/cart/remove/{cartItemId}")
-    public String removeCartItem(@PathVariable Long cartItemId, Authentication authentication, RedirectAttributes redirectAttributes) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return "redirect:/login";
+        User user = userService.findByUsername(username);
+
+        if (user == null) {
+            System.out.println("User not found for username: " + username); // Лог
+            model.addAttribute("errorMessage", "Пользователь не найден.");
+            return "error";
         }
 
-        try {
-            cartService.removeCartItem(cartItemId);
-            redirectAttributes.addFlashAttribute("message", "Товар удален из корзины.");
-        } catch (RuntimeException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        }
-        return "redirect:/cart";
-    }
+        System.out.println("User found: " + user.getUsername()); // Лог
 
-    // Очистка всей корзины
-    @GetMapping("/cart/clear")
-    public String clearCart(Authentication authentication, RedirectAttributes redirectAttributes) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return "redirect:/login";
+        List<CartItem> cartItems = cartService.getCartItemsForUser(user);
+        System.out.println("Number of cart items retrieved: " + cartItems.size()); // Лог
+        for (CartItem item : cartItems) {
+            System.out.println("  Item: " + item.getProduct().getName() + ", Quantity: " + item.getQuantity()); // Лог
         }
-        Long userId = ((ru.test.auto.model.User) authentication.getPrincipal()).getId();
-        cartService.clearCart(userId);
-        redirectAttributes.addFlashAttribute("message", "Корзина очищена.");
-        return "redirect:/cart";
+
+
+        double total = cartItems.stream().mapToDouble(item -> item.getProduct().getPrice() * item.getQuantity()).sum();
+        model.addAttribute("cartItems", cartItems);
+        model.addAttribute("total", total);
+
+        return "cart";
     }
 }

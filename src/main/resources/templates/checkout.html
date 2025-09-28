@@ -1,46 +1,36 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>АвтоМир - Оформление заказа</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/style.css}">
 </head>
 <body>
 <header>
     <h1>АвтоМир</h1>
     <nav>
-        <a href="/">Главная</a> |
-        <a href="/cart">Корзина (<span th:text="${cartItemCount}">0</span>)</a> |
-        <a href="/my-orders">Мои заказы</a> |
-        <div th:if="${#authorization.expression('isAuthenticated()')}">
-            <span>Привет, <span th:text="${#authentication.principal.username}"></span>!</span> |
-            <a href="/logout">Выйти</a>
-        </div>
-        <div th:unless="${#authorization.expression('isAuthenticated()')}">
-            <a href="/login">Войти</a> |
-            <a href="/register">Зарегистрироваться</a>
-        </div>
+        <a th:href="@{/}">Главная</a>
+        <a th:href="@{/cart}">Корзина</a>
     </nav>
 </header>
 <main>
     <h2>Оформление заказа</h2>
-
-    <div th:if="${errorMessage}" class="error-message" style="color: red; font-weight: bold;">
-        <p th:text="${errorMessage}"></p>
-    </div>
-
-    <div class="checkout-form">
-        <h3>Информация о доставке</h3>
-        <form th:action="@{/checkout}" method="post">
-            <div>
-                <label>Адрес доставки:</label>
-                <textarea name="shippingAddress" rows="4" required th:text="${user.shippingAddress}"></textarea>
-                <!-- Можно также загрузить адрес из профиля пользователя, если он есть -->
-            </div>
-            <br>
-            <p><strong>Итого к оплате: <span th:text="${cart.total}"></span> руб.</strong></p>
-            <button type="submit">Подтвердить заказ</button>
-        </form>
-    </div>
+    <form action="/checkout" method="post">
+        <div>
+            <label for="name">Имя:</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        <div>
+            <label for="address">Адрес доставки:</label>
+            <textarea id="address" name="address" required></textarea>
+        </div>
+        <div>
+            <label for="phone">Номер телефона:</label>
+            <input type="tel" id="phone" name="phone" required>
+        </div>
+        <button type="submit">Подтвердить заказ</button>
+    </form>
 </main>
 <footer>
     <p>&copy; 2023 АвтоМир.</p>
