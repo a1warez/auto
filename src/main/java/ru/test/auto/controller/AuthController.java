@@ -23,13 +23,13 @@ public class AuthController {
 
     @GetMapping("/login")
     public String login() {
-        return "login"; // Thymeleaf шаблон для входа
+        return "login";
     }
 
     @GetMapping("/register")
     public String showRegistrationForm(Model model) {
         model.addAttribute("user", new User());
-        return "register"; // Thymeleaf шаблон для регистрации
+        return "register";
     }
 
     @PostMapping("/register")
@@ -44,9 +44,3 @@ public class AuthController {
         }
     }
 }
-    // Если вам нужно что-то обрабатывать при успешном входе (редко нужно, обычно перенаправление работает)
-    // @GetMapping("/login-success")
-    // public String loginSuccess() {
-    //     return "redirect:/"; // Перенаправление на главную после успешного входа
-    // }
-//}

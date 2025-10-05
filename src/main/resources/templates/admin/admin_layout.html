@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${panelTitle}">Панель управления</title>
+    <link rel="stylesheet" th:href="@{/admin.css}">
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <!-- Подключите Bootstrap или другие CSS-фреймворки -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 200px;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+        .content {
+            flex: 1;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="admin-container">
+    <!-- Боковая панель -->
+    <div class="sidebar">
+        <h2>Админ-панель</h2>
+        <ul>
+            <li><a th:href="@{/admin/products}">Управление товарами</a></li>
+            <li><a th:href="@{/admin/orders}">Управление заказами</a></li>
+            <li><a th:href="@{/admin/users}">Управление пользователями</a></li>
+            <li><a th:href="@{/logout}">Выйти</a></li>
+        </ul>
+    </div>
+
+    <!-- Основной контент -->
+    <div class="content">
+        <h1 th:text="${panelTitle}"></h1>
+        <div th:replace="${content}"></div>
+    </div>
+</div>
+</body>
+</html>

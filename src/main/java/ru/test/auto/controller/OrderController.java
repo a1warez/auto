@@ -1,6 +1,6 @@
 package ru.test.auto.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -8,16 +8,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import ru.test.auto.model.CartItem;
-import ru.test.auto.model.Order;
-import ru.test.auto.model.OrderItem;
-import ru.test.auto.model.User;
+import ru.test.auto.Enum.OrderStatus;
+import ru.test.auto.model.*;
 import ru.test.auto.service.CartService;
 import ru.test.auto.service.OrderService;
 import ru.test.auto.service.UserService;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -25,45 +25,106 @@ import java.util.stream.Collectors;
 @Controller
 public class OrderController {
 
-    private CartService cartService;
+    private final CartService cartService;
     private final OrderService orderService;
     private final UserService userService; // Опционально: для предзаполнения данных пользователя
 
-    public OrderController(OrderService orderService, UserService userService) {
+    public OrderController(OrderService orderService, UserService userService, CartService cartService) {
         this.orderService = orderService;
         this.userService = userService;
+        this.cartService = cartService;
     }
 
-    // Страница оформления заказа (checkout)
-    @GetMapping("/checkout")
-    public String checkout(Authentication authentication, Model model) {
-        System.out.println("Checkout method called!");
+    @PostMapping("/checkout")
+    public String checkout(Model model, RedirectAttributes redirectAttributes, Authentication authentication) {
+        System.out.println("Метод checkout вызван!");
+
+        // 1. Проверка аутентификации
         if (authentication == null || !authentication.isAuthenticated()) {
+            System.out.println("Пользователь не аутентифицирован, перенаправление на логин.");
             return "redirect:/login";
         }
-        Long userId = ((ru.test.auto.model.User) authentication.getPrincipal()).getId();
-        // Можно загрузить данные пользователя для предзаполнения формы адреса, если они есть
-        // model.addAttribute("user", userService.loadUserByUsername(authentication.getName()));
-        return "checkout"; // Thymeleaf шаблон для оформления заказа
-    }
 
-//    // Обработка оформления заказа (POST запрос)
-//    @PostMapping("/checkout")
-//    public String placeOrder(@RequestParam String shippingAddress, Authentication authentication, RedirectAttributes redirectAttributes) {
-//        if (authentication == null || !authentication.isAuthenticated()) {
-//            return "redirect:/login";
-//        }
-//        Long userId = ((ru.test.auto.model.User) authentication.getPrincipal()).getId();
-//
-//        try {
-//            Order placedOrder = orderService.placeOrder(userId, shippingAddress);
-//            redirectAttributes.addFlashAttribute("message", "Заказ успешно оформлен! Ваш номер заказа: " + placedOrder.getId());
-//            return "redirect:/order-success?orderId=" + placedOrder.getId();
-//        } catch (RuntimeException e) {
-//            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-//            return "redirect:/checkout"; // Возвращаемся на страницу оформления, если есть ошибка (например, нет товара на складе)
-//        }
-//    }
+        String username = authentication.getName();
+        User user = userService.findByUsername(username);
+
+        if (user == null) {
+            System.out.println("Пользователь не найден в БД.");
+            redirectAttributes.addFlashAttribute("errorMessage", "Пользователь не найден.");
+            return "redirect:/cart";
+        }
+
+        // 2. Получаем корзину
+        List<CartItem> cartItems = cartService.getCartItemsForUser(user);
+
+        if (cartItems == null || cartItems.isEmpty()) {
+            System.out.println("Корзина пуста.");
+            redirectAttributes.addFlashAttribute("errorMessage", "Ваша корзина пуста.");
+            return "redirect:/cart";
+        }
+
+        // 3. Создание заказа
+        Order newOrder = new Order();
+        newOrder.setUser(user);
+        newOrder.setOrderDate(LocalDateTime.now());
+        newOrder.setOrderStatus(OrderStatus.NEW);
+
+        try {
+            // Преобразование CartItem в OrderItem и расчет цены
+            List<OrderItem> orderItems = cartItems.stream()
+                    .map(cartItem -> {
+                        OrderItem orderItem = new OrderItem();
+                        orderItem.setOrder(newOrder);
+                        orderItem.setProduct(cartItem.getProduct());
+                        orderItem.setQuantity(cartItem.getQuantity());
+
+                        // Обратите внимание на обработку NullPointerException и возможные другие проверки
+                        BigDecimal productPrice = BigDecimal.valueOf(cartItem.getProduct().getPrice());
+                        if (productPrice == null) {
+                            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Цена продукта не может быть равна null.");
+                        }
+
+                        orderItem.setPrice(productPrice);
+
+                        BigDecimal totalItemPrice = productPrice.multiply(BigDecimal.valueOf(cartItem.getQuantity()));
+                        orderItem.setTotalItemPrice(totalItemPrice);
+
+                        return orderItem;
+                    })
+                    .collect(Collectors.toList());
+
+            newOrder.setOrderItems(orderItems);
+
+            // 4. Рассчитываем общую сумму заказа
+            BigDecimal total = newOrder.getOrderItems().stream()
+                    .map(OrderItem::getTotalItemPrice)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            newOrder.setTotalAmount(total);
+
+            // 5. Сохранение заказа
+            Order savedOrder = orderService.saveOrder(newOrder);
+            System.out.println("Заказ успешно создан с ID: " + savedOrder.getId());
+
+            // 6. Очистка корзины (Обязательно!)
+            cartService.clearCart(user);
+
+            // 7. Перенаправление на страницу подтверждения
+            return "redirect:/order/success";
+        } catch (NullPointerException e) {
+            System.err.println("NullPointerException при создании заказа: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Ошибка: обнаружены некорректные данные при создании заказа.");
+            return "redirect:/cart";
+        } catch (ResponseStatusException rse) {
+            System.err.println("Ошибка при создании заказа: " + rse.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", rse.getMessage());
+            return "redirect:/cart";
+        } catch (Exception e) {
+            System.err.println("Ошибка при создании заказа: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Ошибка при создании заказа: " + e.getMessage());
+            return "redirect:/cart";
+        }
+    }
 
     // Страница успешного оформления заказа
     @GetMapping("/order-success")
@@ -120,80 +181,7 @@ public class OrderController {
         }
     }
 
-
-    @PostMapping("/checkout") // Или URL, который вы используете
-    public String checkout(Model model, Authentication authentication) {
-        System.out.println("Метод checkout вызван!"); // Добавьте этот лог
-
-        // Проверка аутентификации
-        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
-            System.out.println("Пользователь не аутентифицирован, перенаправление на логин.");
-            return "redirect:/login";
-        }
-
-        String username = authentication.getName();
-        System.out.println("Аутентифицированный пользователь: " + username);
-
-        User user = userService.findByUsername(username);
-
-        if (user == null) {
-            System.out.println("Пользователь не найден.");
-            model.addAttribute("errorMessage", "Пользователь не найден.");
-            return "error"; // Или ваша страница ошибки
-        }
-
-        // Получаем товары из корзины пользователя
-        List<CartItem> cartItems = cartService.getCartItemsForUser(user);
-
-        if (cartItems.isEmpty()) {
-            System.out.println("Корзина пуста.");
-            model.addAttribute("errorMessage", "Ваша корзина пуста.");
-            return "cart"; // Или ваша страница корзины
-        }
-
-        // Создаем заказ
-        Order order = new Order();
-        order.setUser(user);
-        order.setOrderDate(java.time.LocalDateTime.now());
-
-        // Преобразуем List<CartItem> в List<OrderItem>
-        List<OrderItem> orderItems = cartItems.stream()
-                .map(cartItem -> {
-                    OrderItem orderItem = new OrderItem();
-                    orderItem.setProduct(cartItem.getProduct());
-                    orderItem.setQuantity(cartItem.getQuantity());
-                    // Преобразуем цену продукта из CartItem в BigDecimal
-                    BigDecimal productPrice = BigDecimal.valueOf(cartItem.getProduct().getPrice());
-                    orderItem.setPrice(productPrice); // Предполагаем, что у OrderItem есть поле price типа BigDecimal
-
-                    return orderItem;
-                })
-                .collect(Collectors.toList());
-
-        order.setOrderItems(orderItems); // Устанавливаем orderItems
-
-        // Рассчитываем общую сумму заказа
-        double total = cartItems.stream().mapToDouble(item -> item.getProduct().getPrice() * item.getQuantity()).sum();
-        order.setTotalAmount(BigDecimal.valueOf(total)); // Преобразуем double в BigDecimal
-
-        try {
-            Order savedOrder = orderService.saveOrder(order);
-            System.out.println("Заказ успешно создан с ID: " + savedOrder.getId());
-
-            // Очистка корзины (или другой код для обработки заказа)
-            cartService.clearCart(user); // Если нужно очистить корзину
-
-            model.addAttribute("order", savedOrder);
-            // Перенаправляем на страницу подтверждения
-            return "redirect:/order/confirmation"; // или "/order/success"
-        } catch (Exception e) {
-            System.err.println("Ошибка при создании заказа: " + e.getMessage());
-            model.addAttribute("errorMessage", "Ошибка при создании заказа: " + e.getMessage());
-            return "cart"; // Или ваша страница корзины
-        }
-    }
-
-    @GetMapping("/order/confirmation") // Страница подтверждения заказа
+    @GetMapping("/order/success") // Страница подтверждения заказа
     public String showConfirmation(Model model, Authentication authentication) {
         // Логика отображения страницы подтверждения заказа (например, с информацией о заказе)
         if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
@@ -207,8 +195,9 @@ public class OrderController {
             return "error";
         }
         model.addAttribute("user",user);
-        return "order-confirmation"; // Название вашей страницы подтверждения заказа
+        return "order-success"; // Название вашей страницы подтверждения заказа
     }
 }
+
 
 

@@ -19,7 +19,7 @@
     <div th:if="${products.isEmpty()}">
         <p>Нет ни одного продукта.</p>
     </div>
-    <table th:unless="${products.isEmpty()}">
+    <table class="table-admin">
         <thead>
         <tr>
             <th>Название</th>
@@ -34,8 +34,8 @@
             <td th:text="${product.description}"></td>
             <td th:text="${product.price}"></td>
             <td>
-                <a th:href="@{/admin/edit-product/{id}(id=${product.id})}">Редактировать</a>
-                <a th:href="@{/admin/delete-product/{id}(id=${product.id})}">Удалить</a>
+                <a th:href="@{/admin/products/{productId}/edit(productId=${product.id})}" class="action-btn btn-edit">Редактировать</a>
+                <a th:href="@{/admin/delete-product/{id}(id=${product.id})}" class="action-btn btn-delete">Удалить</a>
             </td>
         </tr>
         </tbody>

@@ -37,8 +37,8 @@
             </div>
             <div id="cart-total">
                 <p>Общая сумма: <span id="total-price" th:text="${#numbers.formatCurrency(total)} + ' руб.'">0 руб.</span></p>
-                <button id="checkout-btn">Оформить заказ</button>
-                <script th:src="@{/static/cart.js}"></script>
+                    <form th:action="@{/checkout}" method="post">
+                    <button id="checkout-btn" type="submit">Оформить заказ</button>
             </div>
         </div>
     </div>
@@ -46,5 +46,6 @@
 <footer>
     <p>&copy; 2023 АвтоМир.</p>
 </footer>
+<script th:src="@{/cart.js}"></script>
 </body>
 </html>

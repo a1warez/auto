@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${product.name}">АвтоМир - Детали товара</title>
     <link rel="stylesheet" th:href="@{/style.css}">
+    <script src="addToCart.js"></script>
     <!-- Optional: Add Bootstrap CSS for a more modern look -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
@@ -23,7 +24,7 @@
         <img th:src="${product.imageUrl}" alt="Product Image" width="300">
         <p th:text="${product.description}">Описание товара</p>
         <p>Цена: <span th:text="${product.price}"></span> руб.</p>
-        <button>В корзину</button>
+        <button class="add-to-cart-btn" th:onclick="'addToCart(' + ${product.id} + ')'">В корзину</button>
     </div>
 </main>
 <footer>

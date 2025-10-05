@@ -1,5 +1,7 @@
 package ru.test.auto.model;
 
+import ru.test.auto.Enum.OrderStatus;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -20,11 +22,14 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "order_status", nullable = false)
+    private OrderStatus orderStatus;
+
     private LocalDateTime orderDate;
 //    private Date orderDate;
     private BigDecimal totalAmount;
     private String shippingAddress;
-    private String orderStatus; // Например: "PENDING", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"
 
     // Геттеры и сеттеры
     public Long getId() {
@@ -75,11 +80,11 @@ public class Order {
         this.shippingAddress = shippingAddress;
     }
 
-    public String getOrderStatus() {
+    public OrderStatus getOrderStatus() {
         return orderStatus;
     }
 
-    public void setOrderStatus(String orderStatus) {
+    public void setOrderStatus(OrderStatus orderStatus) {
         this.orderStatus = orderStatus;
     }
 }

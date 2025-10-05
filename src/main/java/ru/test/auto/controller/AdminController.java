@@ -2,6 +2,7 @@ package ru.test.auto.controller;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,6 +26,25 @@ public class AdminController {
         this.orderService = orderService;
     }
 
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/products")
+    public String showProductList(Model model,
+                                  @RequestParam(name = "page", defaultValue = "0") int page,
+                                  @RequestParam(name = "size", defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Product> productPage = productService.getAllProducts(pageable);
+
+        model.addAttribute("products", productPage.getContent());
+        model.addAttribute("page", page);
+        model.addAttribute("totalP" +
+                "ages", productPage.getTotalPages());
+
+        return "admin/product-list"; // Thymeleaf шаблон для списка товаров (админ)
+    }
+
+
     // Отображение формы добавления продукта (только для ADMIN)
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/add-product")
@@ -42,20 +62,6 @@ public class AdminController {
         return "redirect:/admin/products"; // После добавления можно перенаправить на список продуктов
     }
 
-    // Список всех продуктов для редактирования (с пагинацией)
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/admin/products")
-    public String showProductList(Model model,
-                                  @RequestParam(name = "page", defaultValue = "0") int page,
-                                  @RequestParam(name = "size", defaultValue = "10") int size) {
-        Page<Product> productPage = productService.getAllProductsPaged(PageRequest.of(page, size));
-        model.addAttribute("products", productPage.getContent());
-        model.addAttribute("page", page);
-        model.addAttribute("size", size);
-        model.addAttribute("totalPages", productPage.getTotalPages());
-        return "admin/product-list"; // Thymeleaf шаблон для списка товаров (админ)
-    }
-
     // Форма редактирования продукта (только для ADMIN)
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/products/{productId}/edit")
@@ -70,20 +76,15 @@ public class AdminController {
         }
     }
 
-    // Обработка редактирования продукта (только для ADMIN)
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/products/{productId}/edit")
     public String editProduct(@PathVariable Long productId, @ModelAttribute Product product, RedirectAttributes redirectAttributes) {
-        if (!productId.equals(product.getId())) {
-            redirectAttributes.addFlashAttribute("errorMessage", "ID товара не совпадает!");
-            return "redirect:/admin/products";
-        }
+        //Удалите проверку if (product.id.equals(product.getId()))
 
         productService.updateProduct(product);
         redirectAttributes.addFlashAttribute("message", "Товар успешно обновлен!");
         return "redirect:/admin/products"; // Перенаправляем на список товаров
     }
-
     // Список всех заказов (только для ADMIN)
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/orders")
@@ -117,5 +118,17 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/admin/orders";
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/delete-product/{id}")
+    public String deleteProduct(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            productService.deleteProduct(id);
+            redirectAttributes.addFlashAttribute("message", "Товар успешно удален!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Ошибка при удалении товара: " + e.getMessage());
+        }
+        return "redirect:/admin/products";
     }
 }

@@ -1,0 +1,112 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f8f9fa; /* Светлый фон для админки */
+    color: #333;
+}
+
+/* Контейнер с Flexbox для разделения на боковую панель и контент */
+.admin-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Боковая панель (Sidebar) */
+.sidebar {
+    width: 250px;
+    background-color: #343a40; /* Темный фон для навигации */
+    color: #ffffff;
+    padding: 20px 0;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 1.3em;
+    color: #fff;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar li a {
+    display: block;
+    padding: 10px 20px;
+    text-decoration: none;
+    color: #adb5bd;
+    border-bottom: 1px solid #495057;
+    transition: background-color 0.2s;
+}
+
+.sidebar li a:hover {
+    background-color: #495057;
+    color: #ffffff;
+}
+
+/* Основное содержимое */
+.content {
+    flex-grow: 1;
+    padding: 30px;
+}
+
+.content h1 {
+    border-bottom: 2px solid #ccc;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+/* Стили для таблиц (Списки товаров/заказов) */
+.table-admin {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #ffffff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.table-admin th, .table-admin td {
+    border: 1px solid #dee2e6;
+    padding: 12px 15px;
+    text-align: left;
+}
+
+.table-admin th {
+    background-color: #e9ecef;
+    color: #495057;
+    font-weight: bold;
+}
+
+.table-admin tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* Стили для кнопок действий (Редактировать, Удалить) */
+.action-btn {
+    padding: 5px 10px;
+    text-decoration: none;
+    border-radius: 4px;
+    margin-right: 5px;
+    font-size: 0.9em;
+}
+
+.btn-edit {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-delete {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Стили для форм (Добавить/Редактировать товар) */
+.admin-form {
+    max-width: 600px;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}

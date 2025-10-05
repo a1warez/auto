@@ -1,38 +1,32 @@
-console.log('cart.js loaded');
-document.addEventListener('DOMContentLoaded', function() { // Подождем загрузки DOM
-
-    const checkoutButton = document.getElementById('checkout-btn');
-
-    if (checkoutButton) { // Проверим, что кнопка существует
-        checkoutButton.addEventListener('click', function(event) {
-            event.preventDefault(); // Предотвратим стандартное поведение (отправку формы)
-
-            console.log('Кнопка "Оформить заказ" нажата!'); // Лог (обязательно)
-
-            // Отправка запроса на сервер
-            fetch('/checkout', { // Замените '/checkout' на ваш URL
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json', // Если сервер ожидает JSON
-                    // 'X-CSRF-TOKEN': // Добавьте CSRF токен, если он нужен
-                },
-            })
-                .then(response => {
-                    if (response.ok) {
-                        console.log('Заказ успешно создан!');
-                        // Перенаправление на страницу подтверждения или другую страницу
-                        window.location.href = '/order/confirmation'; // Замените на ваш URL
-                    } else {
-                        console.error('Ошибка при создании заказа:', response.status);
-                        alert('Ошибка при оформлении заказа. Пожалуйста, попробуйте еще раз.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Ошибка при запросе:', error);
-                    alert('Произошла ошибка. Пожалуйста, попробуйте позже.');
-                });
+function checkout() {
+    console.log('Checkout function called!'); // Добавьте этот лог для проверки
+    fetch('/checkout', {
+        method: 'POST',
+        // Другие параметры запроса (например, данные корзины)
+        // В данном примере мы не передаем данные корзины,
+        // но в реальном приложении их нужно будет передать.
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            // Здесь нужно передать данные корзины, например:
+            // cartItems: cartItems
+        })
+    })
+        .then(response => {
+            // Обрабатываем ответ от сервера
+            if (response.ok) {
+                // Заказ успешно оформлен
+                alert('Заказ успешно оформлен!');
+                // Перенаправляем пользователя на страницу подтверждения заказа
+                window.location.href = '/order-success';
+            } else {
+                // Произошла ошибка при оформлении заказа
+                alert('Произошла ошибка при оформлении заказа.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Произошла ошибка при оформлении заказа.');
         });
-    } else {
-        console.warn('Кнопка "Оформить заказ" не найдена.'); // Лог, если кнопка не найдена
-    }
-});
+}

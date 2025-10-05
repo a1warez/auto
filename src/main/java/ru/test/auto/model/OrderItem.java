@@ -20,7 +20,8 @@ public class OrderItem {
     private Product product;
 
     private int quantity;
-    private BigDecimal price; // Цена товара на момент заказа
+    private BigDecimal price;
+    private BigDecimal totalItemPrice;// Цена товара на момент заказа
 
     // Геттеры и сеттеры
     public Long getId() {
@@ -61,6 +62,14 @@ public class OrderItem {
 
     public void setPrice(BigDecimal price) {
         this.price = price;
+    }
+
+    public BigDecimal getTotalItemPrice() {
+        return totalItemPrice;
+    }
+
+    public void setTotalItemPrice(BigDecimal totalItemPrice) {
+        this.totalItemPrice = totalItemPrice;
     }
 
 //    public BigDecimal getSubtotal() {

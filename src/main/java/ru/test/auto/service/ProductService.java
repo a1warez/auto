@@ -65,6 +65,10 @@ public class ProductService {
              throw new RuntimeException("Product with ID " + product.getId() + " not found.");
          }
         }
+
+    public void deleteProduct(Long id) {
+        productRepository.deleteById(id);
     }
+}
 
     // Можно добавить методы для обновления, удаления, добавления в корзину и т.д.

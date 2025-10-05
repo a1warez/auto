@@ -4,12 +4,8 @@ package ru.test.auto.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.test.auto.model.Cart;
-import ru.test.auto.model.CartItem;
-import ru.test.auto.model.Order;
-import ru.test.auto.model.OrderItem;
-import ru.test.auto.model.Product;
-import ru.test.auto.model.User;
+import ru.test.auto.Enum.OrderStatus;
+import ru.test.auto.model.*;
 import ru.test.auto.repository.CartItemRepository;
 import ru.test.auto.repository.CartRepository;
 import ru.test.auto.repository.OrderRepository;
@@ -21,7 +17,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
@@ -69,7 +64,7 @@ public class OrderService {
         order.setUser(user);
         order.setOrderDate(LocalDateTime.now());
         order.setShippingAddress(shippingAddress);
-        order.setOrderStatus("NEW"); // Начальный статус заказа
+        order.setOrderStatus(OrderStatus.NEW); // Начальный статус заказа
 
         BigDecimal totalAmount = BigDecimal.ZERO;
         List<OrderItem> orderItems = new ArrayList<>();
@@ -116,7 +111,7 @@ public class OrderService {
     public void updateOrderStatus(Long orderId, String status) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Заказ с ID " + orderId + " не найден"));
-        order.setOrderStatus(status);
+        order.setOrderStatus(OrderStatus.NEW);
         orderRepository.save(order);
     }
     @Autowired
